@@ -24,6 +24,12 @@ Resources:
       Timeout: 10
       MemorySize: 256
       Events:
+        Index:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref GarmiApi
+            Path: /
+            Method: GET
         Risk:
           Type: HttpApi
           Properties:

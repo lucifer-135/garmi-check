@@ -106,9 +106,25 @@ def replay(place: dict, day: str) -> dict:
             "source": "Open-Meteo historical (ERA5 reanalysis)"}
 
 
+INDEX = {
+    "service": "Garmi Check API: humidity-aware heat risk (wet-bulb vs thermometer) for outdoor workers in India",
+    "app": "https://main.dvom9khnw26xr.amplifyapp.com",
+    "source": "https://github.com/lucifer-135/garmi-check",
+    "endpoints": {
+        "GET /risk?lat=&lon=&region=plains|coastal|hills": "today and tomorrow, hourly, from the Open-Meteo forecast",
+        "GET /replay?lat=&lon=&region=&date=YYYY-MM-DD": "one past day from the Open-Meteo archive (ERA5)",
+    },
+    "examples": ["/risk?lat=13.08&lon=80.27&region=coastal",
+                 "/replay?lat=13.08&lon=80.27&region=coastal&date=2024-06-01"],
+    "note": "Estimate, not medical advice. Weather data: Open-Meteo (CC BY 4.0).",
+}
+
+
 def handler(event, context):
     path = event.get("rawPath", "")
     qs = event.get("queryStringParameters") or {}
+    if path in ("", "/"):
+        return _response(200, INDEX, 3600)
     try:
         place = _place(qs)
         if path.endswith("/risk"):
