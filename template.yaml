@@ -1,0 +1,49 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Garmi Check - humidity-aware heat-stress API (wet-bulb vs thermometer)
+
+Resources:
+  GarmiApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      DefaultRouteSettings:
+        ThrottlingBurstLimit: 20
+        ThrottlingRateLimit: 10
+      CorsConfiguration:
+        AllowOrigins: ["*"]
+        AllowMethods: [GET]
+
+  HeatFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: garmi-check-api
+      Description: Wet-bulb heat risk from Open-Meteo hourly data
+      CodeUri: backend/
+      Handler: app.handler
+      Runtime: python3.13
+      Timeout: 10
+      MemorySize: 256
+      Events:
+        Risk:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref GarmiApi
+            Path: /risk
+            Method: GET
+        Replay:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref GarmiApi
+            Path: /replay
+            Method: GET
+
+  HeatFunctionLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/garmi-check-api
+      RetentionInDays: 14
+
+Outputs:
+  ApiUrl:
+    Description: Base URL for the Garmi Check API
+    Value: !Sub "https://${GarmiApi}.execute-api.${AWS::Region}.amazonaws.com"
