@@ -4,7 +4,7 @@
 
 - **Live app:** https://main.dvom9khnw26xr.amplifyapp.com
 - **API:** https://00j78xdnh0.execute-api.ap-south-1.amazonaws.com/risk?lat=13.08&lon=80.27&region=coastal
-- **Demo video:** _coming soon_
+- **Demo video:** https://youtu.be/RIPnx9m9LdI
 
 Built for Environmental Hacks (WeMakeDevs x AWS), Heat and Water track, 8 to 11 Oct 2026.
 
