@@ -5,6 +5,7 @@ GET /replay?lat=&lon=&region=&date=      one past day from the Open-Meteo archiv
 """
 import json
 import re
+import time
 from datetime import date, datetime, timedelta, timezone
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
@@ -51,20 +52,34 @@ def _place(qs: dict) -> dict:
     return {"lat": round(lat, 2), "lon": round(lon, 2), "region": region}
 
 
-def _fetch_hourly(url: str, params: dict) -> tuple:
-    full = url + "?" + urlencode(params)
-    try:
-        with urlopen(full, timeout=8) as resp:
-            data = json.load(resp)
-    except HTTPError as e:
-        reason = ""
+RETRY_DELAYS = (0.5, 1.5)  # seconds before the 2nd and 3rd attempt
+
+
+def _get_json(full: str) -> dict:
+    """GET with retries on overload (429/5xx) and network errors."""
+    for attempt in range(len(RETRY_DELAYS) + 1):
         try:
-            reason = json.load(e).get("reason", "")
-        except Exception:
-            pass
-        raise ApiError(502, f"Weather service error ({e.code}). {reason}".strip())
-    except (URLError, TimeoutError, OSError):
-        raise ApiError(504, "Weather service did not respond. Try again in a minute.")
+            with urlopen(full, timeout=5) as resp:
+                return json.load(resp)
+        except HTTPError as e:
+            if e.code != 429 and e.code < 500:
+                reason = ""
+                try:
+                    reason = json.load(e).get("reason", "")
+                except Exception:
+                    pass
+                raise ApiError(502, f"Weather service error ({e.code}). {reason}".strip())
+            err = ApiError(502, f"Weather service is busy ({e.code}). Try again in a minute.")
+        except (URLError, TimeoutError, OSError):
+            err = ApiError(504, "Weather service did not respond. Try again in a minute.")
+        if attempt < len(RETRY_DELAYS):
+            print(json.dumps({"retry": attempt + 1, "error": err.message}))
+            time.sleep(RETRY_DELAYS[attempt])
+    raise err
+
+
+def _fetch_hourly(url: str, params: dict) -> tuple:
+    data = _get_json(url + "?" + urlencode(params))
     hourly = data.get("hourly") or {}
     times = hourly.get("time") or []
     temps = hourly.get("temperature_2m") or [None] * len(times)

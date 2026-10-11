@@ -1,3 +1,4 @@
+import json
 import unittest
 
 from heat import (avoid_windows, body_band, summarize_day, summarize_reading,
@@ -109,6 +110,40 @@ class AlertTest(unittest.TestCase):
         self.assertLess(len(subject), 100)
         self.assertIn("Avoid heavy work between: 10:00–12:00, 13:00–16:00", message)
         self.assertIn("would not flag this day", message)
+
+
+class RetryTest(unittest.TestCase):
+    def _run(self, outcomes):
+        import io
+        from unittest import mock
+        from urllib.error import HTTPError
+        import app
+        calls = []
+
+        def fake_urlopen(url, timeout):
+            calls.append(url)
+            o = outcomes[len(calls) - 1]
+            if isinstance(o, int):
+                raise HTTPError(url, o, "err", {}, io.BytesIO(b'{"reason": "x"}'))
+            return io.BytesIO(json.dumps(o).encode())
+
+        with mock.patch.object(app, "urlopen", fake_urlopen), mock.patch.object(app.time, "sleep"):
+            try:
+                return app._get_json("http://x"), len(calls)
+            except app.ApiError as e:
+                return e, len(calls)
+
+    def test_retries_overload_then_succeeds(self):
+        result, n = self._run([503, 503, {"ok": 1}])
+        self.assertEqual((result, n), ({"ok": 1}, 3))
+
+    def test_gives_up_after_three_attempts(self):
+        result, n = self._run([503, 429, 502])
+        self.assertEqual((result.status, n), (502, 3))
+
+    def test_does_not_retry_bad_request(self):
+        result, n = self._run([400])
+        self.assertEqual((result.status, n), (502, 1))
 
 
 if __name__ == "__main__":

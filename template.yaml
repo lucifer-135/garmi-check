@@ -21,7 +21,7 @@ Resources:
       CodeUri: backend/
       Handler: app.handler
       Runtime: python3.13
-      Timeout: 10
+      Timeout: 25
       MemorySize: 256
       Policies:
         - Statement:
@@ -68,7 +68,7 @@ Resources:
       CodeUri: backend/
       Handler: alerts.handler
       Runtime: python3.13
-      Timeout: 60
+      Timeout: 180
       MemorySize: 256
       Environment:
         Variables:

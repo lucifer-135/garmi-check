@@ -1,14 +1,14 @@
 // Preset cities and "real heat day" examples for Garmi Check.
 
 window.CITIES = [
-  { id: "chennai", en: "Chennai", hi: "चेन्नई", lat: 13.08, lon: 80.27, region: "coastal" },
-  { id: "mumbai", en: "Mumbai", hi: "मुंबई", lat: 19.08, lon: 72.88, region: "coastal" },
-  { id: "visakhapatnam", en: "Visakhapatnam", hi: "विशाखापत्तनम", lat: 17.69, lon: 83.22, region: "coastal" },
-  { id: "kochi", en: "Kochi", hi: "कोच्चि", lat: 9.93, lon: 76.27, region: "coastal" },
-  { id: "delhi", en: "Delhi", hi: "दिल्ली", lat: 28.61, lon: 77.21, region: "plains" },
-  { id: "nagpur", en: "Nagpur", hi: "नागपुर", lat: 21.15, lon: 79.09, region: "plains" },
-  { id: "solapur", en: "Solapur", hi: "सोलापुर", lat: 17.66, lon: 75.91, region: "plains" },
-  { id: "jalgaon", en: "Jalgaon", hi: "जलगाँव", lat: 21.01, lon: 75.56, region: "plains" },
+  { id: "chennai", en: "Chennai", hi: "चेन्नई", state_en: "Tamil Nadu", state_hi: "तमिलनाडु", lat: 13.08, lon: 80.27, region: "coastal" },
+  { id: "mumbai", en: "Mumbai", hi: "मुंबई", state_en: "Maharashtra", state_hi: "महाराष्ट्र", lat: 19.08, lon: 72.88, region: "coastal" },
+  { id: "visakhapatnam", en: "Visakhapatnam", hi: "विशाखापत्तनम", state_en: "Andhra Pradesh", state_hi: "आंध्र प्रदेश", lat: 17.69, lon: 83.22, region: "coastal" },
+  { id: "kochi", en: "Kochi", hi: "कोच्चि", state_en: "Kerala", state_hi: "केरल", lat: 9.93, lon: 76.27, region: "coastal" },
+  { id: "delhi", en: "Delhi", hi: "दिल्ली", state_en: "NCT", state_hi: "एनसीटी", lat: 28.61, lon: 77.21, region: "plains" },
+  { id: "nagpur", en: "Nagpur", hi: "नागपुर", state_en: "Maharashtra", state_hi: "महाराष्ट्र", lat: 21.15, lon: 79.09, region: "plains" },
+  { id: "solapur", en: "Solapur", hi: "सोलापुर", state_en: "Maharashtra", state_hi: "महाराष्ट्र", lat: 17.66, lon: 75.91, region: "plains" },
+  { id: "jalgaon", en: "Jalgaon", hi: "जलगाँव", state_en: "Maharashtra", state_hi: "महाराष्ट्र", lat: 21.01, lon: 75.56, region: "plains" },
 ];
 
 // Single midday readings cited by Down To Earth (28 Mar 2024). Results computed
