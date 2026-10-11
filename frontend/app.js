@@ -3,7 +3,7 @@
   "use strict";
 
   // API Gateway base URL (set after `sam deploy`). Local dev server serves the API on the same origin.
-  var DEPLOYED_API = "";
+  var DEPLOYED_API = "https://00j78xdnh0.execute-api.ap-south-1.amazonaws.com";
   var LOCAL = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
   var API = LOCAL ? "" : DEPLOYED_API;
 

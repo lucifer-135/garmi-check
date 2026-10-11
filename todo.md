@@ -36,76 +36,76 @@ If you're working solo, this is tight. Use the cut list early, not at 10:45.
 
 ## Phase 0: Admin (15 min, now)
 
-- [ ] Open the submit form and fill in the deadline above. If the form is closed, stop and ask the organisers on the WeMakeDevs Discord.
+- [x] Open the submit form and fill in the deadline above. If the form is closed, stop and ask the organisers on the WeMakeDevs Discord.
 - [ ] Every teammate: verify student status on AWS Builder Center (required to compete) and check in on the hackathon page with their own account.
-- [ ] AWS account works (a debit card or RuPay works, with a verification charge of about ₹2). Use region `ap-south-1` (Mumbai) for everything.
+- [x] AWS account works (a debit card or RuPay works, with a verification charge of about ₹2). Use region `ap-south-1` (Mumbai) for everything.
 - [ ] AWS Budgets: create a zero-spend budget, so you get an email if anything starts costing money.
-- [ ] Create a **public** GitHub repo. The first commit is this file. Commit at least every 30 min.
-- [ ] Tools: `aws sts get-caller-identity` and `sam --version` both work, and Python 3.12 or 3.13 is installed.
+- [x] Create a **public** GitHub repo. The first commit is this file. Commit at least every 30 min.
+- [x] Tools: `aws sts get-caller-identity` and `sam --version` both work, and Python 3.12 or 3.13 is installed.
 
 ## Phase 1: Core logic in `backend/heat.py` (35 min)
 
-- [ ] `wet_bulb_c(t_c, rh)` using the Stull (2011) formula (code in Reference).
+- [x] `wet_bulb_c(t_c, rh)` using the Stull (2011) formula (code in Reference).
   - Valid for RH 5–99 % and −20 to 50 °C.
   - Error is −1 to +0.65 °C, so show one decimal and call it an estimate.
-- [ ] `body_band(wbt_c)`: `lower` below 30, `high` from 30 to below 35, `extreme` at 35 and above.
+- [x] `body_band(wbt_c)`: `lower` below 30, `high` from 30 to below 35, `extreme` at 35 and above.
   - These are the commonly cited limits. Label them "indicative" and never print "safe".
-- [ ] `thermometer_view(max_temp_c, region)`, with thresholds of 40 °C for plains, 37 °C for coastal and 30 °C for hills:
+- [x] `thermometer_view(max_temp_c, region)`, with thresholds of 40 °C for plains, 37 °C for coastal and 30 °C for hills:
   - 45 °C or more: "heatwave by temperature alone"
   - from the threshold up to 45 °C: "meets the temperature threshold; an official heatwave also needs ≥ 4.5 °C above normal (not modelled)"
   - below the threshold: "below the official temperature threshold"
-- [ ] `avoid_windows(hours)`: merge consecutive `high` or `extreme` hours into ranges like `12:00–16:00`.
-- [ ] Tests in `backend/test_heat.py`:
-  - [ ] Solapur 40 °C / 53 % gives 31.54 ± 0.05
-  - [ ] Jalgaon 46.8 °C / 29 % gives 30.72 ± 0.05
-  - [ ] Band edges: 29.9 is lower, 30.0 is high, 35.0 is extreme
-  - [ ] Thermometer view: Jalgaon (46.8, plains) is a heatwave by temperature; Solapur (40, plains) only meets the threshold
-- [ ] Commit.
+- [x] `avoid_windows(hours)`: merge consecutive `high` or `extreme` hours into ranges like `12:00–16:00`.
+- [x] Tests in `backend/test_heat.py`:
+  - [x] Solapur 40 °C / 53 % gives 31.54 ± 0.05
+  - [x] Jalgaon 46.8 °C / 29 % gives 30.72 ± 0.05
+  - [x] Band edges: 29.9 is lower, 30.0 is high, 35.0 is extreme
+  - [x] Thermometer view: Jalgaon (46.8, plains) is a heatwave by temperature; Solapur (40, plains) only meets the threshold
+- [x] Commit.
 
 ## Phase 2: API on AWS in `backend/app.py` + `template.yaml` (40 min)
 
-- [ ] Write the Lambda handler with the standard library only (`urllib.request`, `json`). It uses HttpApi payload v2: route on `event["rawPath"]` and read `event["queryStringParameters"]`.
-  - [ ] `GET /risk?lat=&lon=&region=` calls the Open-Meteo forecast for today and tomorrow. It returns per-hour wet-bulb, bands, the thermometer view and avoid windows.
-  - [ ] `GET /replay?lat=&lon=&region=&date=YYYY-MM-DD` returns the same output from the Open-Meteo archive for that day.
-  - [ ] Return JSON with the header `Access-Control-Allow-Origin: *`. A plain GET from the browser needs no preflight.
-  - [ ] Use `urlopen(..., timeout=8)`. Handle `null` humidity values and Open-Meteo errors with a clear message, not a 500.
-- [ ] Write `template.yaml` (minimal version in Reference).
-- [ ] Run `sam deploy --guided`. There are no dependencies, so `sam build` is optional; skip it if it complains about your Python version.
-- [ ] Test: `curl "<API_URL>/risk?lat=13.08&lon=80.27&region=coastal"`
-- [ ] Find replay days with a small local script.
+- [x] Write the Lambda handler with the standard library only (`urllib.request`, `json`). It uses HttpApi payload v2: route on `event["rawPath"]` and read `event["queryStringParameters"]`.
+  - [x] `GET /risk?lat=&lon=&region=` calls the Open-Meteo forecast for today and tomorrow. It returns per-hour wet-bulb, bands, the thermometer view and avoid windows.
+  - [x] `GET /replay?lat=&lon=&region=&date=YYYY-MM-DD` returns the same output from the Open-Meteo archive for that day.
+  - [x] Return JSON with the header `Access-Control-Allow-Origin: *`. A plain GET from the browser needs no preflight.
+  - [x] Use `urlopen(..., timeout=8)`. Handle `null` humidity values and Open-Meteo errors with a clear message, not a 500.
+- [x] Write `template.yaml` (minimal version in Reference).
+- [x] Run `sam deploy --guided`. There are no dependencies, so `sam build` is optional; skip it if it complains about your Python version.
+- [x] Test: `curl "<API_URL>/risk?lat=13.08&lon=80.27&region=coastal"`
+- [x] Find replay days with a small local script.
   - For each preset city, pull April to June of a recent summer (for example 2024) from the archive.
   - Find the hour with the highest wet-bulb and save the city and date in `frontend/presets.js`.
   - Archive values are model data, not station readings, so they won't match the Solapur and Jalgaon article numbers. Keep the two sets separate.
 - [ ] If SAM fights you for more than 15 min, create the function in the Lambda console instead. Paste the code and add an API Gateway HTTP API trigger.
-- [ ] Commit.
+- [x] Commit.
 
 ## Phase 3: Frontend in `frontend/index.html` + `app.js` + `presets.js` (50 min)
 
-- [ ] Use plain HTML, CSS and JS with no framework, so it loads fast on a cheap phone. Check it at 360 px width.
-- [ ] City dropdown (presets in Reference).
-- [ ] "Use my location" button. Browser geolocation works on the HTTPS Amplify URL.
-- [ ] Region picker for your-location mode: plains, coastal or hills (default plains).
-- [ ] Big result card with colour, an icon and words (not colour alone), plus the wet-bulb number.
-- [ ] **Side by side: "Thermometer says" and "Your body feels". This is the demo moment.**
-- [ ] An "Avoid heavy work between 12:00–16:00" line.
-- [ ] Hourly strip for today: one small coloured block per hour, with the time.
-- [ ] "Share on WhatsApp" button using `https://wa.me/?text=` plus a URL-encoded summary, so a supervisor or union rep can forward it.
-- [ ] Hindi and English toggle (strings in Reference; have a native speaker check them).
-- [ ] "See a real heat day" chips:
+- [x] Use plain HTML, CSS and JS with no framework, so it loads fast on a cheap phone. Check it at 360 px width.
+- [x] City dropdown (presets in Reference).
+- [x] "Use my location" button. Browser geolocation works on the HTTPS Amplify URL.
+- [x] Region picker for your-location mode: plains, coastal or hills (default plains).
+- [x] Big result card with colour, an icon and words (not colour alone), plus the wet-bulb number.
+- [x] **Side by side: "Thermometer says" and "Your body feels". This is the demo moment.**
+- [x] An "Avoid heavy work between 12:00–16:00" line.
+- [x] Hourly strip for today: one small coloured block per hour, with the time.
+- [x] "Share on WhatsApp" button using `https://wa.me/?text=` plus a URL-encoded summary, so a supervisor or union rep can forward it.
+- [x] Hindi and English toggle (strings in Reference; have a native speaker check them).
+- [x] "See a real heat day" chips:
   - The two cited cases (Solapur and Jalgaon, 28 Mar 2024) are single midday readings. Hard-code them and name the source. They show the card only, with no hourly strip.
   - Add the replay days from Phase 2.
 - [ ] Optional job picker (construction, delivery, vending, sanitation). Tonight it changes only the advice text and the WhatsApp message, not the thresholds.
-- [ ] Advice lines: copy 3–4 do's from NDMA's heatwave guidance and cite it. Don't write your own medical advice.
-- [ ] Footer: "Estimate, not medical advice. Weather data: Open-Meteo."
-- [ ] Commit.
+- [x] Advice lines: copy 3–4 do's from NDMA's heatwave guidance and cite it. Don't write your own medical advice.
+- [x] Footer: "Estimate, not medical advice. Weather data: Open-Meteo."
+- [x] Commit.
 
 ## Phase 4: Deploy the site (15 min)
 
-- [ ] Put the API URL in `app.js`.
-- [ ] In the Amplify console, choose Create new app, then Deploy without Git, then Drag and drop.
+- [x] Put the API URL in `app.js`.
+- [x] In the Amplify console, choose Create new app, then Deploy without Git, then Drag and drop.
   - Zip the **contents** of `frontend/`, not the folder itself. Zipping the folder causes an "Access Denied" error.
 - [ ] On a phone, open the Amplify URL and test the city picker, your location, Hindi, WhatsApp share and replay.
-- [ ] Put the live URL in the README and commit.
+- [x] Put the live URL in the README and commit.
 
 ## Phase 5: Stretch, email alerts (only if 75 min or more remain before the deadline)
 
