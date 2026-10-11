@@ -106,6 +106,37 @@ def replay(place: dict, day: str) -> dict:
             "source": "Open-Meteo historical (ERA5 reanalysis)"}
 
 
+def place_name(place: dict) -> dict:
+    """City and state for a location via Amazon Location Service (reverse geocode)."""
+    import boto3  # available in the Lambda Python runtime
+
+    client = boto3.client("geo-places")
+    names = {}
+    for lang in ("en", "hi"):
+        try:
+            resp = client.reverse_geocode(
+                QueryPosition=[place["lon"], place["lat"]], MaxResults=1, Language=lang,
+                Filter={"IncludePlaceTypes": ["Locality"]})
+        except Exception as e:
+            print(json.dumps({"route": "/place", "lang": lang, "error": str(e)[:300]}))
+            continue
+        items = resp.get("ResultItems") or []
+        if not items:
+            continue
+        a = items[0].get("Address") or {}
+        city = a.get("Locality") or a.get("District") or (a.get("SubRegion") or {}).get("Name")
+        state = (a.get("Region") or {}).get("Name")
+        country = (a.get("Country") or {}).get("Name")
+        if city or state:
+            names[lang] = {"city": city, "state": state, "country": country}
+    if not names:
+        raise ApiError(502, "Could not find a place name for this location.")
+    names.setdefault("en", names.get("hi"))
+    names.setdefault("hi", names.get("en"))
+    return {"place": {"lat": place["lat"], "lon": place["lon"]}, "names": names,
+            "source": "Amazon Location Service"}
+
+
 INDEX = {
     "service": "Garmi Check API: humidity-aware heat risk (wet-bulb vs thermometer) for outdoor workers in India",
     "app": "https://main.dvom9khnw26xr.amplifyapp.com",
@@ -113,6 +144,7 @@ INDEX = {
     "endpoints": {
         "GET /risk?lat=&lon=&region=plains|coastal|hills": "today and tomorrow, hourly, from the Open-Meteo forecast",
         "GET /replay?lat=&lon=&region=&date=YYYY-MM-DD": "one past day from the Open-Meteo archive (ERA5)",
+        "GET /place?lat=&lon=": "city and state for a location (Amazon Location Service), English and Hindi",
     },
     "examples": ["/risk?lat=13.08&lon=80.27&region=coastal",
                  "/replay?lat=13.08&lon=80.27&region=coastal&date=2024-06-01"],
@@ -131,8 +163,12 @@ def handler(event, context):
             body, cache = risk(place), 600
         elif path.endswith("/replay"):
             body, cache = replay(place, qs.get("date", "")), 86400
+        elif path.endswith("/place"):
+            body = place_name(place)
+            print(json.dumps({"route": path, **place, "names": body["names"]}, ensure_ascii=False))
+            return _response(200, body, 86400)
         else:
-            raise ApiError(404, "Unknown route. Use /risk or /replay.")
+            raise ApiError(404, "Unknown route. Use /risk, /replay or /place.")
         peak = body["days"][0]["body"] or {}
         print(json.dumps({"route": path, **place, "date": qs.get("date"),
                           "max_wbt_c": peak.get("max_wbt_c"), "band": peak.get("band")}))

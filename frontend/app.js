@@ -148,6 +148,7 @@
     lang: "en",
     cityId: "chennai",
     loc: null,            // {lat, lon} when using browser location
+    locName: null,        // {en: {city, state}, hi: {...}} from /place (Amazon Location Service)
     region: "plains",     // used with browser location
     view: "live",         // live | replay | cited
     exampleId: null,
@@ -184,13 +185,28 @@
   function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
   function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
 
+  function locLabel() {
+    var n = state.locName && state.locName[state.lang];
+    if (!n) return null;
+    return [n.city, n.state].filter(Boolean).join(", ");
+  }
+
+  function fetchPlaceName(loc) {
+    fetch(API + "/place?lat=" + loc.lat + "&lon=" + loc.lon)
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (body) {
+        if (body && body.names && state.loc === loc) { state.locName = body.names; render(); }
+      })
+      .catch(function () {});
+  }
+
   function currentPlace() {
     if (state.view !== "live") {
       var ex = example(state.exampleId), c = city(ex.city);
       return { name: c[state.lang], lat: c.lat, lon: c.lon, region: c.region };
     }
     if (state.loc) {
-      return { name: t("yourLocation"), lat: state.loc.lat, lon: state.loc.lon, region: state.region };
+      return { name: locLabel() || t("yourLocation"), lat: state.loc.lat, lon: state.loc.lon, region: state.region, mine: true };
     }
     var cc = city(state.cityId);
     return { name: cc[state.lang], lat: cc.lat, lon: cc.lon, region: cc.region };
@@ -255,7 +271,7 @@
     var sel = $("city");
     sel.innerHTML = CITIES.map(function (c) {
       return '<option value="' + c.id + '">' + esc(c[state.lang]) + "</option>";
-    }).join("") + (state.loc ? '<option value="__loc">📍 ' + esc(t("yourLocation")) + "</option>" : "");
+    }).join("") + (state.loc ? '<option value="__loc">📍 ' + esc(locLabel() || t("yourLocation")) + "</option>" : "");
     sel.value = state.loc ? "__loc" : state.cityId;
     $("regionRow").hidden = !state.loc;
     $("adviceList").innerHTML = t("advice").map(function (a) { return "<li>" + esc(a) + "</li>"; }).join("");
@@ -367,7 +383,10 @@
     $("modeNote").textContent = note;
     $("backLive").hidden = state.view === "live";
 
-    var out = '<p class="place">' + esc(place.name) + "</p>";
+    var out = '<p class="place">' + (place.mine ? "📍 " : "") + esc(place.name) + "</p>";
+    if (place.mine && state.view === "live") {
+      out += '<div class="label">' + esc(t("yourLocation")) + " · " + place.lat + ", " + place.lon + "</div>";
+    }
     if (state.loading) {
       $("result").innerHTML = out + '<div class="loading">' + esc(t("loading")) + "</div>";
       return;
@@ -457,7 +476,10 @@
       btn.lastElementChild.textContent = t("locating");
       navigator.geolocation.getCurrentPosition(function (pos) {
         btn.disabled = false;
+        btn.lastElementChild.textContent = t("useLocation");
         state.loc = { lat: pos.coords.latitude.toFixed(2), lon: pos.coords.longitude.toFixed(2) };
+        state.locName = null;
+        fetchPlaceName(state.loc);
         goLive();
       }, function () {
         btn.disabled = false;

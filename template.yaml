@@ -23,6 +23,11 @@ Resources:
       Runtime: python3.13
       Timeout: 10
       MemorySize: 256
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action: geo-places:ReverseGeocode
+              Resource: !Sub "arn:${AWS::Partition}:geo-places:${AWS::Region}::provider/default"
       Events:
         Index:
           Type: HttpApi
@@ -41,6 +46,12 @@ Resources:
           Properties:
             ApiId: !Ref GarmiApi
             Path: /replay
+            Method: GET
+        Place:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref GarmiApi
+            Path: /place
             Method: GET
 
   AlertTopic:

@@ -19,7 +19,7 @@ Official alerts can miss humid heat. Garmi Check is a screening aid that fills t
 
 ## What it does
 
-1. Pick a city, or use your phone's location and choose plains, coast or hills.
+1. Pick a city, or use your phone's location (shown as city and state, for example "Coimbatore, Tamil Nadu", via Amazon Location Service) and choose plains, coast or hills.
 2. See **"Thermometer says"** (the day's highest temperature against the official heatwave mark) next to **"Your body feels"** (the peak wet-bulb estimate and its risk band).
 3. If the thermometer alone would not flag the day but humidity makes it risky, the app says so.
 4. **"Avoid heavy work between 12:00–16:00"**: consecutive high-risk hours merged into time windows.
@@ -37,8 +37,9 @@ If the thermometer crosses the official mark but the wet-bulb reads low (dry hea
 Phone browser ──► AWS Amplify Hosting (static HTML/CSS/JS)
       │
       └─ fetch ──► Amazon API Gateway (HTTP API, throttled)
-                         └──► AWS Lambda (Python 3.13, standard library only)
-                                   └──► Open-Meteo forecast / archive API
+                         └──► AWS Lambda (Python 3.13, no packaged dependencies)
+                                   ├──► Open-Meteo forecast / archive API
+                                   └──► Amazon Location Service (reverse geocode: city, state)
                          Lambda logs ──► Amazon CloudWatch Logs
 
 Amazon EventBridge (06:00 IST daily) ──► AWS Lambda (alerts) ──► Amazon SNS ──► email
@@ -49,6 +50,7 @@ Deployed with AWS SAM (CloudFormation stack "garmi-check")
 |---|---|
 | `GET /risk?lat=&lon=&region=` | Today and tomorrow from the Open-Meteo forecast: hourly temperature, humidity, wet-bulb and band, the thermometer verdict, peak wet-bulb, and avoid windows |
 | `GET /replay?lat=&lon=&region=&date=YYYY-MM-DD` | The same for one past day from the Open-Meteo archive (ERA5) |
+| `GET /place?lat=&lon=` | City, state and country in English and Hindi, from Amazon Location Service |
 
 Alerts go to the SNS topic `garmi-check-alerts`, with a `city` message attribute so a subscriber can use a filter policy to get only their city. To send a demo alert for a past day, test the `garmi-check-daily-alert` function with `{"replay_date": "2024-06-01", "cities": ["chennai"]}`.
 
