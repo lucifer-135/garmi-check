@@ -2,7 +2,7 @@
 
 **Track:** Heat and Water · **Event:** Environmental Hacks (WeMakeDevs x AWS)
 
-> **DEADLINE:** `__:__` on `__ Oct`. Copy it from the submit form now: https://www.wemakedevs.org/aws/env/submit (no late entries)
+> **DEADLINE:** `23:59` IST on `11 Oct` (Sun). Confirmed by the user from the submit form: https://www.wemakedevs.org/aws/env/submit (no late entries)
 > **Code freeze:** deadline − 60 min · **Submitted by:** deadline − 15 min
 
 **Pitch in one line:** India declares heatwaves by the thermometer. Your body feels the wet-bulb. Garmi Check shows outdoor workers both, hour by hour, in Hindi and English.
