@@ -27,6 +27,7 @@ Official alerts can miss humid heat. Garmi Check is a screening aid that fills t
 6. **Share on WhatsApp** with a ready-made summary, in Hindi or English.
 7. **See a real heat day:** the two cited Down To Earth readings, plus replays of humid summer days from the Open-Meteo archive (for example Chennai on 1 Jun 2024: 36.8 °C, below the 37 °C coastal mark, but a wet-bulb of 30.3 °C, which is high risk). Live October data is mostly lower risk, so replay shows how the app behaves in summer.
 8. First-aid steps quoted from NDMA's heatwave guidance, and emergency numbers.
+9. **Daily 6 AM email alerts:** an EventBridge schedule runs a Lambda that checks today's forecast for every preset city and emails an SNS alert (English and Hindi) when any hour is high risk or worse, with the hours to avoid.
 
 If the thermometer crosses the official mark but the wet-bulb reads low (dry heat), the app warns that dry heat is still dangerous instead of only showing "lower risk".
 
@@ -39,6 +40,8 @@ Phone browser ──► AWS Amplify Hosting (static HTML/CSS/JS)
                          └──► AWS Lambda (Python 3.13, standard library only)
                                    └──► Open-Meteo forecast / archive API
                          Lambda logs ──► Amazon CloudWatch Logs
+
+Amazon EventBridge (06:00 IST daily) ──► AWS Lambda (alerts) ──► Amazon SNS ──► email
 Deployed with AWS SAM (CloudFormation stack "garmi-check")
 ```
 
@@ -46,6 +49,8 @@ Deployed with AWS SAM (CloudFormation stack "garmi-check")
 |---|---|
 | `GET /risk?lat=&lon=&region=` | Today and tomorrow from the Open-Meteo forecast: hourly temperature, humidity, wet-bulb and band, the thermometer verdict, peak wet-bulb, and avoid windows |
 | `GET /replay?lat=&lon=&region=&date=YYYY-MM-DD` | The same for one past day from the Open-Meteo archive (ERA5) |
+
+Alerts go to the SNS topic `garmi-check-alerts`, with a `city` message attribute so a subscriber can use a filter policy to get only their city. To send a demo alert for a past day, test the `garmi-check-daily-alert` function with `{"replay_date": "2024-06-01", "cities": ["chennai"]}`.
 
 Locations are rounded to two decimals (about 1 km) before use, and nothing is stored.
 
@@ -84,7 +89,7 @@ Put the `ApiUrl` output from `sam deploy` into `DEPLOYED_API` at the top of [`fr
 
 ## Next steps
 
-- Daily SMS and WhatsApp alerts for supervisors (SMS to Indian numbers needs TRAI DLT registration).
+- SMS and WhatsApp alerts for supervisors, alongside today's email alerts (SMS to Indian numbers needs TRAI DLT registration), and a sign-up page with per-city filters.
 - Job-specific work and rest advice from a published WBGT table.
 - A map of cooling and drinking-water points; a 2026 audit of Delhi's Heat Action Plan found these could only be located by canvassing ([The Leaflet](https://theleaflet.in/governance-and-policy/auditing-delhis-heat-action-plan-a-ground-study-part-i)).
 

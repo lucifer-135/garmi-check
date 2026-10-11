@@ -112,11 +112,11 @@ If you're working solo, this is tight. Use the cut list early, not at 10:45.
 - [ ] Create one SNS topic per preset city (for example `garmi-chennai`).
   - The fastest way to subscribe is to add your own email in the SNS console. The person subscribing must click the confirmation email.
   - A "Subscribe" form in the app is optional.
-- [ ] Add a scheduled Lambda: a SAM `Schedule` event with `cron(30 0 * * ? *)`, which is 6:00 AM IST.
+- [x] Add a scheduled Lambda: a SAM `Schedule` event with `cron(30 0 * * ? *)`, which is 6:00 AM IST.
   - Give it `SNSPublishMessagePolicy`.
   - It checks today's forecast per city and publishes if any hour is `high` or worse.
 - [ ] For the video, run the alert Lambda with the console's Test button and show the email arriving.
-- [ ] **No SMS tonight.** SMS to Indian numbers on local routes needs TRAI DLT registration with a company's PAN, TAN, GSTIN and CIN. Mention SMS and WhatsApp alerts as a next step instead.
+- [x] **No SMS tonight.** SMS to Indian numbers on local routes needs TRAI DLT registration with a company's PAN, TAN, GSTIN and CIN. Mention SMS and WhatsApp alerts as a next step instead.
 
 ## Phase 6: Demo video, 3:00 max (start at code freeze)
 

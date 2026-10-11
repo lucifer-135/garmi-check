@@ -97,5 +97,19 @@ class SummaryTest(unittest.TestCase):
         self.assertEqual(r["body"]["band"], "high")
 
 
+class AlertTest(unittest.TestCase):
+    def test_subject_is_ascii_and_short(self):
+        from alerts import build_alert
+        from cities import CITIES
+        city = CITIES[2]  # Visakhapatnam, the longest name
+        times = [f"2024-05-30T{h:02d}:00" for h in range(10, 16)]
+        day = summarize_day("2024-05-30", times, [36.3] * 6, [75, 75, 50, 75, 75, 75], "coastal")
+        subject, message = build_alert(city, day, "2024-05-30")
+        subject.encode("ascii")
+        self.assertLess(len(subject), 100)
+        self.assertIn("Avoid heavy work between: 10:00–12:00, 13:00–16:00", message)
+        self.assertIn("would not flag this day", message)
+
+
 if __name__ == "__main__":
     unittest.main()

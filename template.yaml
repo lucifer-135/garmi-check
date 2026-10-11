@@ -43,6 +43,42 @@ Resources:
             Path: /replay
             Method: GET
 
+  AlertTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: garmi-check-alerts
+      DisplayName: Garmi Check
+
+  AlertFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: garmi-check-daily-alert
+      Description: 6 AM IST daily check; emails high/extreme wet-bulb days per city via SNS
+      CodeUri: backend/
+      Handler: alerts.handler
+      Runtime: python3.13
+      Timeout: 60
+      MemorySize: 256
+      Environment:
+        Variables:
+          TOPIC_ARN: !Ref AlertTopic
+          APP_URL: https://main.dvom9khnw26xr.amplifyapp.com
+      Policies:
+        - SNSPublishMessagePolicy:
+            TopicName: !GetAtt AlertTopic.TopicName
+      Events:
+        DailyAt6amIST:
+          Type: Schedule
+          Properties:
+            Schedule: cron(30 0 * * ? *)
+            Description: Garmi Check daily heat alert, 06:00 IST (00:30 UTC)
+
+  AlertFunctionLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/garmi-check-daily-alert
+      RetentionInDays: 14
+
   HeatFunctionLogs:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -53,3 +89,6 @@ Outputs:
   ApiUrl:
     Description: Base URL for the Garmi Check API
     Value: !Sub "https://${GarmiApi}.execute-api.${AWS::Region}.amazonaws.com"
+  AlertTopicArn:
+    Description: SNS topic for daily heat alerts (subscribe an email to it)
+    Value: !Ref AlertTopic
