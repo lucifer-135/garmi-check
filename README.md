@@ -6,8 +6,6 @@
 - **API:** https://00j78xdnh0.execute-api.ap-south-1.amazonaws.com/risk?lat=13.08&lon=80.27&region=coastal
 - **Demo video:** https://youtu.be/RIPnx9m9LdI
 
-Built for Environmental Hacks (WeMakeDevs x AWS), Heat and Water track, 8 to 11 Oct 2026.
-
 ## The problem
 
 - IMD declares a heatwave from temperature alone: at least 40 °C on the plains, 37 °C on the coast or 30 °C in the hills, plus at least 4.5 °C above normal. Anything above 45 °C counts automatically. IMD does not calculate wet-bulb temperature, which combines heat and humidity. ([Down To Earth, 28 Mar 2024](https://www.downtoearth.org.in/climate-change/indians-may-already-be-experiencing-temperatures-close-to-limits-of-human-survivability-without-even-being-aware-95278))
